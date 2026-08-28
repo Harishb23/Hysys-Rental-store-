@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HISYSApplication.DTO
 {
-    public class ProductRequestDto
+    public class ProductUpdateDto
     {
         [Required(ErrorMessage = "Product name is required.")]
         [StringLength(200)]
@@ -21,7 +21,6 @@ namespace HISYSApplication.DTO
         [StringLength(50)]
         public string StockStatus { get; set; } = "In Stock";
 
-        [Required(ErrorMessage = "Image file is required.")]
-        public IFormFile Image { get; set; } = null!;
+        public IFormFile? Image { get; set; }
     }
 }

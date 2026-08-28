@@ -1,4 +1,4 @@
-﻿using HISYSApplication.DTO;
+using HISYSApplication.DTO;
 using HISYSApplication.Repositories.Interface;
 using HISYSApplication.Services.Interface;
 
@@ -22,26 +22,20 @@ namespace HISYSApplication.Services
                 throw new ArgumentException("Image is required.");
             }
 
-            // Convert uploaded image to binary
             using var memoryStream = new MemoryStream();
-
             await product.Image.CopyToAsync(memoryStream);
-
             byte[] imageBytes = memoryStream.ToArray();
-
-            // Content type: image/jpeg, image/png, image/webp, etc.
             string contentType = product.Image.ContentType;
 
-            // Save to database through repository
             return await _productRepository.AddProductAsync(
                 product,
                 imageBytes,
                 contentType);
         }
 
-        public async Task<List<ProductResponseDto>> GetAllProductsAsync()
+        public async Task<List<ProductResponseDto>> GetAllProductsAsync(string? category = null, string? search = null)
         {
-            return await _productRepository.GetAllProductsAsync();
+            return await _productRepository.GetAllProductsAsync(category, search);
         }
 
         public async Task<ProductResponseDto?> GetProductAsync(int id)
@@ -52,6 +46,27 @@ namespace HISYSApplication.Services
         public async Task<ProductImageDto?> GetProductImageAsync(int id)
         {
             return await _productRepository.GetProductImageAsync(id);
+        }
+
+        public async Task<bool> UpdateProductAsync(int id, ProductUpdateDto product)
+        {
+            byte[]? imageBytes = null;
+            string? contentType = null;
+
+            if (product.Image != null && product.Image.Length > 0)
+            {
+                using var memoryStream = new MemoryStream();
+                await product.Image.CopyToAsync(memoryStream);
+                imageBytes = memoryStream.ToArray();
+                contentType = product.Image.ContentType;
+            }
+
+            return await _productRepository.UpdateProductAsync(id, product, imageBytes, contentType);
+        }
+
+        public async Task<bool> DeleteProductAsync(int id)
+        {
+            return await _productRepository.DeleteProductAsync(id);
         }
     }
 }

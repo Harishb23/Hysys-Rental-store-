@@ -1,235 +1,307 @@
-﻿using HISYSApplication.DTO;
+using HISYSApplication.DTO;
 using HISYSApplication.Repositories.Interface;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
-public class ProductRepository : IProductRepository
+namespace HISYSApplication.Repositories
 {
-    private readonly IConfiguration _configuration;
-
-    public ProductRepository(IConfiguration configuration)
+    public class ProductRepository : IProductRepository
     {
-        _configuration = configuration;
-    }
+        private readonly IConfiguration _configuration;
 
-    public async Task<int> AddProductAsync(
-        ProductRequestDto product,
-        byte[] imageBytes,
-        string contentType)
-    {
-        var connectionString =
-            _configuration.GetConnectionString("DefaultConnection");
-
-        using var connection =
-            new SqlConnection(connectionString);
-
-        const string query = @"
-            INSERT INTO Products
-            (
-                Name,
-                Description,
-                ImageData,
-                ImageContentType,
-                Price
-            )
-            VALUES
-            (
-                @Name,
-                @Description,
-                @ImageData,
-                @ImageContentType,
-                @Price
-            );
-
-            SELECT CAST(SCOPE_IDENTITY() AS INT);";
-
-        using var command = new SqlCommand(query, connection);
-
-        command.Parameters.Add(
-            "@Name",
-            SqlDbType.NVarChar,
-            200).Value = product.Name;
-
-        command.Parameters.Add(
-            "@Description",
-            SqlDbType.NVarChar).Value =
-            (object?)product.Description ?? DBNull.Value;
-
-        command.Parameters.Add(
-            "@ImageData",
-            SqlDbType.VarBinary,
-            -1).Value = imageBytes;
-
-        command.Parameters.Add(
-            "@ImageContentType",
-            SqlDbType.NVarChar,
-            100).Value = contentType;
-
-        var priceParameter =
-            command.Parameters.Add(
-                "@Price",
-                SqlDbType.Decimal);
-
-        priceParameter.Precision = 18;
-        priceParameter.Scale = 2;
-        priceParameter.Value = product.Price;
-
-        await connection.OpenAsync();
-
-        return (int)await command.ExecuteScalarAsync();
-    }
-
-    public async Task<List<ProductResponseDto>> GetAllProductsAsync()
-    {
-        var products = new List<ProductResponseDto>();
-
-        var connectionString =
-            _configuration.GetConnectionString("DefaultConnection");
-
-        using var connection =
-            new SqlConnection(connectionString);
-
-        const string query = @"
-        SELECT
-            Id,
-            Name,
-            Description,
-            Price
-        FROM Products
-        ORDER BY Id DESC";
-
-        using var command =
-            new SqlCommand(query, connection);
-
-        await connection.OpenAsync();
-
-        using var reader =
-            await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
+        public ProductRepository(IConfiguration configuration)
         {
-            var id = reader.GetInt32(
-                reader.GetOrdinal("Id"));
+            _configuration = configuration;
+        }
 
-            products.Add(new ProductResponseDto
+        private string ConnectionString =>
+            _configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("DefaultConnection is not configured.");
+
+        public async Task<int> AddProductAsync(
+            ProductRequestDto product,
+            byte[] imageBytes,
+            string contentType)
+        {
+            using var connection = new SqlConnection(ConnectionString);
+
+            const string query = @"
+                INSERT INTO Products
+                (
+                    Name,
+                    Description,
+                    Category,
+                    StockStatus,
+                    ImageData,
+                    ImageContentType,
+                    Price,
+                    CreatedAt
+                )
+                VALUES
+                (
+                    @Name,
+                    @Description,
+                    @Category,
+                    @StockStatus,
+                    @ImageData,
+                    @ImageContentType,
+                    @Price,
+                    GETUTCDATE()
+                );
+
+                SELECT CAST(SCOPE_IDENTITY() AS INT);";
+
+            using var command = new SqlCommand(query, connection);
+
+            command.Parameters.Add("@Name", SqlDbType.NVarChar, 200).Value = product.Name;
+            command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = (object?)product.Description ?? DBNull.Value;
+            command.Parameters.Add("@Category", SqlDbType.NVarChar, 100).Value = string.IsNullOrWhiteSpace(product.Category) ? "General" : product.Category;
+            command.Parameters.Add("@StockStatus", SqlDbType.NVarChar, 50).Value = string.IsNullOrWhiteSpace(product.StockStatus) ? "In Stock" : product.StockStatus;
+            command.Parameters.Add("@ImageData", SqlDbType.VarBinary, -1).Value = imageBytes;
+            command.Parameters.Add("@ImageContentType", SqlDbType.NVarChar, 100).Value = contentType;
+
+            var priceParameter = command.Parameters.Add("@Price", SqlDbType.Decimal);
+            priceParameter.Precision = 18;
+            priceParameter.Scale = 2;
+            priceParameter.Value = product.Price;
+
+            await connection.OpenAsync();
+            var id = (int)(await command.ExecuteScalarAsync() ?? 0);
+            return id;
+        }
+
+        public async Task<List<ProductResponseDto>> GetAllProductsAsync(string? category = null, string? search = null)
+        {
+            var products = new List<ProductResponseDto>();
+            using var connection = new SqlConnection(ConnectionString);
+
+            string query = @"
+                SELECT
+                    Id,
+                    Name,
+                    Description,
+                    Category,
+                    StockStatus,
+                    Price,
+                    CreatedAt
+                FROM Products
+                WHERE 1 = 1 ";
+
+            if (!string.IsNullOrWhiteSpace(category) && !category.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
-                Id = id,
+                query += " AND LOWER(Category) = LOWER(@Category) ";
+            }
 
-                Name = reader.GetString(
-                    reader.GetOrdinal("Name")),
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query += " AND (LOWER(Name) LIKE LOWER(@Search) OR LOWER(Description) LIKE LOWER(@Search)) ";
+            }
 
-                Description = reader.IsDBNull(
-                    reader.GetOrdinal("Description"))
-                    ? string.Empty
-                    : reader.GetString(
-                        reader.GetOrdinal("Description")),
+            query += " ORDER BY Id DESC";
 
-                Price = reader.GetDecimal(
-                    reader.GetOrdinal("Price")),
+            using var command = new SqlCommand(query, connection);
 
-                ImageUrl = $"/api/products/{id}/image"
-            });
+            if (!string.IsNullOrWhiteSpace(category) && !category.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                command.Parameters.Add("@Category", SqlDbType.NVarChar, 100).Value = category.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                command.Parameters.Add("@Search", SqlDbType.NVarChar, 200).Value = $"%{search.Trim()}%";
+            }
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var id = reader.GetInt32(reader.GetOrdinal("Id"));
+
+                int catOrdinal = -1;
+                try { catOrdinal = reader.GetOrdinal("Category"); } catch { }
+
+                int stockOrdinal = -1;
+                try { stockOrdinal = reader.GetOrdinal("StockStatus"); } catch { }
+
+                int createdOrdinal = -1;
+                try { createdOrdinal = reader.GetOrdinal("CreatedAt"); } catch { }
+
+                string cat = catOrdinal >= 0 && !reader.IsDBNull(catOrdinal) ? reader.GetString(catOrdinal) : "General";
+                string stock = stockOrdinal >= 0 && !reader.IsDBNull(stockOrdinal) ? reader.GetString(stockOrdinal) : "In Stock";
+                DateTime? created = createdOrdinal >= 0 && !reader.IsDBNull(createdOrdinal) ? reader.GetDateTime(createdOrdinal) : null;
+
+                products.Add(new ProductResponseDto
+                {
+                    Id = id,
+                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                    Description = reader.IsDBNull(reader.GetOrdinal("Description")) ? string.Empty : reader.GetString(reader.GetOrdinal("Description")),
+                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                    Category = cat,
+                    StockStatus = stock,
+                    ImageUrl = $"/api/products/{id}/image",
+                    CreatedAt = created
+                });
+            }
+
+            return products;
         }
 
-        return products;
-    }
-
-    public async Task<ProductResponseDto?> GetProductAsync(int id)
-    {
-        var connectionString =
-            _configuration.GetConnectionString("DefaultConnection");
-
-        using var connection =
-            new SqlConnection(connectionString);
-
-        const string query = @"
-        SELECT
-            Id,
-            Name,
-            Description,
-            Price
-        FROM Products
-        WHERE Id = @Id";
-
-        using var command = new SqlCommand(query, connection);
-
-        command.Parameters.Add(
-            "@Id",
-            SqlDbType.Int).Value = id;
-
-        await connection.OpenAsync();
-
-        using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
+        public async Task<ProductResponseDto?> GetProductAsync(int id)
         {
-            return null;
+            using var connection = new SqlConnection(ConnectionString);
+
+            const string query = @"
+                SELECT
+                    Id,
+                    Name,
+                    Description,
+                    Category,
+                    StockStatus,
+                    Price,
+                    CreatedAt
+                FROM Products
+                WHERE Id = @Id";
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+            {
+                return null;
+            }
+
+            int catOrdinal = -1;
+            try { catOrdinal = reader.GetOrdinal("Category"); } catch { }
+
+            int stockOrdinal = -1;
+            try { stockOrdinal = reader.GetOrdinal("StockStatus"); } catch { }
+
+            int createdOrdinal = -1;
+            try { createdOrdinal = reader.GetOrdinal("CreatedAt"); } catch { }
+
+            string cat = catOrdinal >= 0 && !reader.IsDBNull(catOrdinal) ? reader.GetString(catOrdinal) : "General";
+            string stock = stockOrdinal >= 0 && !reader.IsDBNull(stockOrdinal) ? reader.GetString(stockOrdinal) : "In Stock";
+            DateTime? created = createdOrdinal >= 0 && !reader.IsDBNull(createdOrdinal) ? reader.GetDateTime(createdOrdinal) : null;
+
+            return new ProductResponseDto
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                Name = reader.GetString(reader.GetOrdinal("Name")),
+                Description = reader.IsDBNull(reader.GetOrdinal("Description")) ? string.Empty : reader.GetString(reader.GetOrdinal("Description")),
+                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                Category = cat,
+                StockStatus = stock,
+                ImageUrl = $"/api/products/{id}/image",
+                CreatedAt = created
+            };
         }
 
-        return new ProductResponseDto
+        public async Task<ProductImageDto?> GetProductImageAsync(int id)
         {
-            Id = reader.GetInt32(
-                reader.GetOrdinal("Id")),
+            using var connection = new SqlConnection(ConnectionString);
 
-            Name = reader.GetString(
-                reader.GetOrdinal("Name")),
+            const string query = @"
+                SELECT
+                    ImageData,
+                    ImageContentType
+                FROM Products
+                WHERE Id = @Id";
 
-            Description = reader.IsDBNull(
-                reader.GetOrdinal("Description"))
-                ? string.Empty
-                : reader.GetString(
-                    reader.GetOrdinal("Description")),
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
 
-            Price = reader.GetDecimal(
-                reader.GetOrdinal("Price")),
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
 
-            ImageUrl = $"/api/products/{id}/image"
-        };
-    }
+            if (!await reader.ReadAsync())
+            {
+                return null;
+            }
 
-    public async Task<ProductImageDto?> GetProductImageAsync(int id)
-    {
-        var connectionString =
-            _configuration.GetConnectionString("DefaultConnection");
+            if (reader.IsDBNull(reader.GetOrdinal("ImageData")))
+            {
+                return null;
+            }
 
-        using var connection =
-            new SqlConnection(connectionString);
-
-        const string query = @"
-        SELECT
-            ImageData,
-            ImageContentType
-        FROM Products
-        WHERE Id = @Id";
-
-        using var command = new SqlCommand(query, connection);
-
-        command.Parameters.Add(
-            "@Id",
-            SqlDbType.Int).Value = id;
-
-        await connection.OpenAsync();
-
-        using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
-        {
-            return null;
+            return new ProductImageDto
+            {
+                ImageData = (byte[])reader["ImageData"],
+                ContentType = reader["ImageContentType"]?.ToString() ?? "application/octet-stream"
+            };
         }
 
-        if (reader.IsDBNull(
-            reader.GetOrdinal("ImageData")))
+        public async Task<bool> UpdateProductAsync(int id, ProductUpdateDto product, byte[]? newImageBytes, string? newContentType)
         {
-            return null;
+            using var connection = new SqlConnection(ConnectionString);
+
+            string query;
+            if (newImageBytes != null && newImageBytes.Length > 0 && !string.IsNullOrWhiteSpace(newContentType))
+            {
+                query = @"
+                    UPDATE Products
+                    SET
+                        Name = @Name,
+                        Description = @Description,
+                        Price = @Price,
+                        Category = @Category,
+                        StockStatus = @StockStatus,
+                        ImageData = @ImageData,
+                        ImageContentType = @ImageContentType,
+                        UpdatedAt = GETUTCDATE()
+                    WHERE Id = @Id";
+            }
+            else
+            {
+                query = @"
+                    UPDATE Products
+                    SET
+                        Name = @Name,
+                        Description = @Description,
+                        Price = @Price,
+                        Category = @Category,
+                        StockStatus = @StockStatus,
+                        UpdatedAt = GETUTCDATE()
+                    WHERE Id = @Id";
+            }
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@Name", SqlDbType.NVarChar, 200).Value = product.Name;
+            command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = (object?)product.Description ?? DBNull.Value;
+            command.Parameters.Add("@Category", SqlDbType.NVarChar, 100).Value = string.IsNullOrWhiteSpace(product.Category) ? "General" : product.Category;
+            command.Parameters.Add("@StockStatus", SqlDbType.NVarChar, 50).Value = string.IsNullOrWhiteSpace(product.StockStatus) ? "In Stock" : product.StockStatus;
+
+            var priceParam = command.Parameters.Add("@Price", SqlDbType.Decimal);
+            priceParam.Precision = 18;
+            priceParam.Scale = 2;
+            priceParam.Value = product.Price;
+
+            if (newImageBytes != null && newImageBytes.Length > 0 && !string.IsNullOrWhiteSpace(newContentType))
+            {
+                command.Parameters.Add("@ImageData", SqlDbType.VarBinary, -1).Value = newImageBytes;
+                command.Parameters.Add("@ImageContentType", SqlDbType.NVarChar, 100).Value = newContentType;
+            }
+
+            await connection.OpenAsync();
+            int rowsAffected = await command.ExecuteNonQueryAsync();
+            return rowsAffected > 0;
         }
 
-        return new ProductImageDto
+        public async Task<bool> DeleteProductAsync(int id)
         {
-            ImageData = (byte[])reader["ImageData"],
+            using var connection = new SqlConnection(ConnectionString);
+            const string query = "DELETE FROM Products WHERE Id = @Id";
 
-            ContentType =
-                reader["ImageContentType"]?.ToString()
-                ?? "application/octet-stream"
-        };
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+            await connection.OpenAsync();
+            int rowsAffected = await command.ExecuteNonQueryAsync();
+            return rowsAffected > 0;
+        }
     }
 }

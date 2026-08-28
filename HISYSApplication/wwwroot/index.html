@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HYSYS AV Technologies - Admin Dashboard</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Admin Styles -->
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+  <!-- =========================================================================
+       LOGIN SCREEN (Displayed when unauthenticated)
+       ========================================================================= -->
+  <div id="loginView" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="login-logo">
+          <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <h1>HYSYS Admin</h1>
+        <p>Audio Visual & Event Production Portal</p>
+      </div>
+
+      <div id="loginError" style="display: none; padding: 12px; border-radius: 8px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; font-size: 0.86rem; margin-bottom: 20px;"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="usernameInput">Username</label>
+          <div class="input-container">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            <input type="text" id="usernameInput" class="form-control" placeholder="admin" required autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="passwordInput">Password</label>
+          <div class="input-container">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <input type="password" id="passwordInput" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top: 10px;">
+          <span>Sign In to Admin Panel</span>
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </form>
+
+      <div class="login-hint">
+        Default Seed Account: <strong>admin</strong> &bull; Password: <strong>Admin@123</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       ADMIN LAYOUT (Displayed after successful authentication)
+       ========================================================================= -->
+  <div id="adminLayout" class="admin-layout" style="display: none;">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">H</div>
+        <div class="sidebar-brand">
+          <h2>HYSYS AV</h2>
+          <span>Admin Portal</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Management</div>
+        
+        <a class="nav-item active" data-tab="dashboard">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          <span>Dashboard</span>
+        </a>
+
+        <a class="nav-item" data-tab="products">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          <span>Store & Products</span>
+        </a>
+
+        <a class="nav-item" data-tab="inquiries">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <span>Inquiries & Messages</span>
+          <span id="inquiriesBadge" class="nav-badge" style="display: none;">0</span>
+        </a>
+
+        <div class="nav-section-title">Client Views</div>
+        <a href="/store.html" target="_blank" class="nav-item">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <span>Public Store ↗</span>
+        </a>
+        <a href="/contact.html" target="_blank" class="nav-item">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          <span>Contact Page ↗</span>
+        </a>
+        <a href="/swagger" target="_blank" class="nav-item">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          <span>API Swagger Docs ↗</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile-card">
+          <div id="adminAvatarInitial" class="admin-avatar">A</div>
+          <div class="admin-info">
+            <div id="adminDisplayName" class="admin-name">Admin User</div>
+            <div class="admin-role">System Administrator</div>
+          </div>
+          <button id="logoutBtn" class="btn-logout" title="Sign Out">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-title">
+          <button id="mobileMenuToggle" class="mobile-menu-btn">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <h1 id="pageTitle">Dashboard Overview</h1>
+        </div>
+
+        <div class="topbar-actions">
+          <button type="button" class="btn-action-primary" onclick="openAddProductModal()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>Add New Product</span>
+          </button>
+          <button type="button" class="btn-outline" onclick="openChangePasswordModal()" style="display: inline-flex; align-items: center; gap: 6px; border-color: rgba(168, 85, 247, 0.4); color: #c084fc;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+            <span>Change Password</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="admin-body">
+        
+        <!-- SECTION 1: DASHBOARD OVERVIEW -->
+        <section id="section-dashboard" class="content-section active">
+          <!-- Statistics Cards Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+              </div>
+              <div class="stat-info">
+                <div id="statTotalProducts" class="stat-value">0</div>
+                <div class="stat-label">Total Store Products</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon purple">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+              </div>
+              <div class="stat-info">
+                <div id="statCategories" class="stat-value">0</div>
+                <div class="stat-label">Product Categories</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon emerald">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+              <div class="stat-info">
+                <div id="statTotalInquiries" class="stat-value">0</div>
+                <div class="stat-label">Total Inquiries Received</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon amber">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              </div>
+              <div class="stat-info">
+                <div id="statUnreadInquiries" class="stat-value">0</div>
+                <div class="stat-label">Unread Customer Messages</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dual Column Recent Activity -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                  <span>Recently Added Products</span>
+                </div>
+                <button class="btn-outline" onclick="switchTab('products')">View All</button>
+              </div>
+              <div id="dashboardRecentProducts"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                  <span>Recent Inquiries</span>
+                </div>
+                <button class="btn-outline" onclick="switchTab('inquiries')">View All</button>
+              </div>
+              <div id="dashboardRecentInquiries"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: PRODUCTS & STORE MANAGEMENT -->
+        <section id="section-products" class="content-section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                <span>Store Products Directory</span>
+              </div>
+              <div class="card-controls">
+                <div class="search-box">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="productSearch" placeholder="Search products...">
+                </div>
+
+                <select id="categoryFilter" class="select-filter">
+                  <option value="all">All Categories</option>
+                </select>
+
+                <button class="btn-action-primary" onclick="openAddProductModal()">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  <span>Add Product</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Product & Details</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="productsTableBody">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 3: INQUIRIES & CONTACT SUBMISSIONS -->
+        <section id="section-inquiries" class="content-section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span>Customer Inquiries & Messages</span>
+              </div>
+              <div class="card-controls">
+                <select id="inquiryFilter" class="select-filter">
+                  <option value="all">All Inquiries</option>
+                  <option value="unread">Unread Only</option>
+                </select>
+                <button class="btn-outline" onclick="loadInquiries()">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span>Refresh</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Customer</th>
+                    <th>Phone</th>
+                    <th>Subject & Snippet</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="inquiriesTableBody">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       MODALS
+       ========================================================================= -->
+
+  <!-- Modal 1: Add Product -->
+  <div id="addProductModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New Store Product</h3>
+        <button type="button" class="modal-close" onclick="closeModal('addProductModal')">&times;</button>
+      </div>
+      <form id="addProductForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="addProdName">Product Name *</label>
+            <input type="text" id="addProdName" name="Name" class="form-control no-icon" placeholder="e.g., NovaStar 4K LED Processor" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label for="addProdCategory">Category *</label>
+              <input type="text" id="addProdCategory" name="Category" class="form-control no-icon" placeholder="e.g., LED Walls, Audio, Lighting" required list="categorySuggestions">
+              <datalist id="categorySuggestions">
+                <option value="LED Walls">
+                <option value="Line Arrays">
+                <option value="Moving Heads & Lighting">
+                <option value="Truss & Rigging">
+                <option value="Audio Mixers & Processors">
+                <option value="Video & Switching">
+              </datalist>
+            </div>
+
+            <div class="form-group">
+              <label for="addProdPrice">Price (₹ INR) *</label>
+              <input type="number" id="addProdPrice" name="Price" class="form-control no-icon" placeholder="45000" min="0" step="0.01" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="addProdStock">Stock / Availability Status</label>
+            <select id="addProdStock" name="StockStatus" class="form-control no-icon">
+              <option value="In Stock">In Stock</option>
+              <option value="Built to Order">Built to Order</option>
+              <option value="Available for Demo">Available for Demo</option>
+              <option value="Pre-Order">Pre-Order</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Product Image *</label>
+            <div id="imageUploadBox" class="image-upload-area">
+              <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">Click to browse or drag & drop image</p>
+              <input type="file" id="productImageInput" name="Image" accept="image/*" style="display: none;" required>
+              <img id="productImagePreview" class="image-upload-preview" alt="Preview">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="addProdDesc">Product Description</label>
+            <textarea id="addProdDesc" name="Description" class="form-control no-icon" placeholder="Detailed technical specifications, features, warranty, and package inclusions..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal('addProductModal')">Cancel</button>
+          <button type="submit" class="btn-action-primary">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Edit Product -->
+  <div id="editProductModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Store Product</h3>
+        <button type="button" class="modal-close" onclick="closeModal('editProductModal')">&times;</button>
+      </div>
+      <form id="editProductForm">
+        <input type="hidden" id="editProductId">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="editProductName">Product Name *</label>
+            <input type="text" id="editProductName" name="Name" class="form-control no-icon" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label for="editProductCategory">Category *</label>
+              <input type="text" id="editProductCategory" name="Category" class="form-control no-icon" required list="categorySuggestions">
+            </div>
+
+            <div class="form-group">
+              <label for="editProductPrice">Price (₹ INR) *</label>
+              <input type="number" id="editProductPrice" name="Price" class="form-control no-icon" min="0" step="0.01" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editProductStock">Stock / Availability Status</label>
+            <select id="editProductStock" name="StockStatus" class="form-control no-icon">
+              <option value="In Stock">In Stock</option>
+              <option value="Built to Order">Built to Order</option>
+              <option value="Available for Demo">Available for Demo</option>
+              <option value="Pre-Order">Pre-Order</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Update Product Image (Optional)</label>
+            <div id="editImageUploadBox" class="image-upload-area">
+              <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Click or drag new image to replace existing</p>
+              <input type="file" id="editProductImageInput" name="Image" accept="image/*" style="display: none;">
+              <img id="editProductImagePreview" class="image-upload-preview" alt="Preview">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editProductDesc">Product Description</label>
+            <textarea id="editProductDesc" name="Description" class="form-control no-icon"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal('editProductModal')">Cancel</button>
+          <button type="submit" class="btn-action-primary">Update Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: View Inquiry -->
+  <div id="inquiryModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">Inquiry Details</h3>
+        <button type="button" class="modal-close" onclick="closeModal('inquiryModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <div style="font-size: 0.76rem; color: var(--text-dim); text-transform: uppercase;">Customer Name</div>
+              <div id="inquiryDetailName" style="font-weight: 600; color: #fff; font-size: 0.95rem;"></div>
+            </div>
+            <div>
+              <div style="font-size: 0.76rem; color: var(--text-dim); text-transform: uppercase;">Email Address</div>
+              <div id="inquiryDetailEmail" style="font-weight: 500; color: #38bdf8; font-size: 0.95rem;"></div>
+            </div>
+            <div>
+              <div style="font-size: 0.76rem; color: var(--text-dim); text-transform: uppercase;">Phone Number</div>
+              <div id="inquiryDetailPhone" style="font-weight: 500; color: #fff; font-size: 0.95rem;"></div>
+            </div>
+            <div>
+              <div style="font-size: 0.76rem; color: var(--text-dim); text-transform: uppercase;">Date Received</div>
+              <div id="inquiryDetailDate" style="font-weight: 500; color: var(--text-muted); font-size: 0.85rem;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.76rem; color: var(--text-dim); text-transform: uppercase;">Subject</div>
+            <div id="inquiryDetailSubject" style="font-weight: 600; color: #fff; font-size: 0.95rem;"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Customer Message</label>
+          <div id="inquiryDetailMessage" style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; color: #f8fafc; font-size: 0.92rem; line-height: 1.6; white-space: pre-wrap;"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="inquiryMarkReadBtn" class="btn-outline">Toggle Read Status</button>
+        <a id="inquiryReplyBtn" href="#" class="btn-action-primary" target="_blank">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <span>Reply via Email</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="changePasswordModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 460px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" fill="none" stroke="#a855f7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          <h3 class="modal-title">Change Password</h3>
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('changePasswordModal')">&times;</button>
+      </div>
+
+      <form id="changePasswordForm">
+        <div class="modal-body">
+          <div id="changePwdError" class="alert-banner" style="display: none; margin-bottom: 15px;"></div>
+          <div id="changePwdSuccess" style="display: none; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; padding: 12px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 15px;"></div>
+
+          <div class="form-group">
+            <label for="currentPassword">Current Password *</label>
+            <input type="password" id="currentPassword" class="form-control" required placeholder="Enter current password">
+          </div>
+
+          <div class="form-group">
+            <label for="newPassword">New Password * (Min 6 chars)</label>
+            <input type="password" id="newPassword" class="form-control" required minlength="6" placeholder="Enter new password">
+          </div>
+
+          <div class="form-group">
+            <label for="confirmNewPassword">Confirm New Password *</label>
+            <input type="password" id="confirmNewPassword" class="form-control" required minlength="6" placeholder="Re-enter new password">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal('changePasswordModal')">Cancel</button>
+          <button type="submit" id="savePasswordBtn" class="btn-action-primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="/js/admin.js"></script>
+</body>
+</html>

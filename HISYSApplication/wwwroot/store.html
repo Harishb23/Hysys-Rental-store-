@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store & Equipment Catalog - HYSYS AV Technologies</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+
+  <style>
+    .public-page-nav {
+      height: 70px;
+      background: rgba(13, 18, 31, 0.85);
+      backdrop-filter: blur(15px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .store-hero {
+      padding: 60px 20px 40px;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .store-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 30px auto 60px;
+      padding: 0 20px;
+    }
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: var(--shadow-md);
+    }
+    .product-card-img-wrap {
+      height: 200px;
+      width: 100%;
+      background: #0d121f;
+      position: relative;
+      overflow: hidden;
+    }
+    .product-card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .product-card:hover .product-card-img {
+      transform: scale(1.05);
+    }
+    .product-card-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .product-card-title {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .product-card-desc {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .product-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-color);
+    }
+    .store-filter-bar {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    @media (max-width: 850px) {
+      .public-page-nav { padding: 0 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="public-page-nav">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="sidebar-logo-icon">H</div>
+      <div class="sidebar-brand">
+        <h2>HYSYS AV</h2>
+        <span>Audio-Visual & Event Production</span>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <a href="/contact.html" class="btn-outline">Contact Us</a>
+      <a href="/" class="btn-action-primary">Admin Portal</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="store-hero">
+    <span class="badge badge-category" style="margin-bottom: 12px;">TOUR-GRADE HARDWARE & INVENTORY</span>
+    <h1 style="font-family: var(--font-heading); font-size: 2.3rem; font-weight: 800; color: #fff; margin-bottom: 12px;">
+      Professional Audio, Video & LED Store
+    </h1>
+    <p style="color: var(--text-muted); font-size: 1.05rem;">
+      Purchase tour-certified direct-view 4K LED panels, active concert line arrays, automated moving heads, and stage trussing backed by comprehensive warranties.
+    </p>
+  </div>
+
+  <!-- Filters -->
+  <div class="store-filter-bar">
+    <div class="search-box" style="min-width: 280px;">
+      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="text" id="storeSearch" placeholder="Search catalog equipment...">
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <select id="storeCategorySelect" class="select-filter">
+        <option value="all">All Equipment Categories</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Store Grid -->
+  <div id="storeProductsGrid" class="store-grid">
+    <!-- Populated by JavaScript -->
+  </div>
+
+  <script>
+    let catalog = [];
+
+    async function loadStoreProducts() {
+      const grid = document.getElementById('storeProductsGrid');
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">Loading equipment catalog...</div>';
+
+      try {
+        const res = await fetch('/api/products');
+        if (!res.ok) throw new Error('Could not retrieve catalog');
+
+        catalog = await res.json();
+        populateCategories();
+        renderStoreGrid(catalog);
+      } catch (err) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--danger); padding: 40px;">Error loading products: ${err.message}</div>`;
+      }
+    }
+
+    function populateCategories() {
+      const select = document.getElementById('storeCategorySelect');
+      const cats = Array.from(new Set(catalog.map(p => p.category).filter(Boolean)));
+      select.innerHTML = '<option value="all">All Equipment Categories</option>' +
+        cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    function renderStoreGrid(products) {
+      const grid = document.getElementById('storeProductsGrid');
+      if (products.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: var(--text-muted);"><h3>No products currently found.</h3></div>';
+        return;
+      }
+
+      grid.innerHTML = products.map(p => `
+        <div class="product-card">
+          <div class="product-card-img-wrap">
+            <img src="${p.imageUrl}" alt="${p.name}" class="product-card-img" onerror="this.src='https://via.placeholder.com/400x250?text=HYSYS+AV'">
+            <span class="badge ${p.stockStatus === 'Built to Order' ? 'badge-order' : 'badge-in-stock'}" style="position: absolute; top: 12px; right: 12px;">
+              ${p.stockStatus || 'In Stock'}
+            </span>
+          </div>
+
+          <div class="product-card-body">
+            <span class="badge badge-category" style="align-self: flex-start; margin-bottom: 8px;">${p.category || 'Equipment'}</span>
+            <h3 class="product-card-title">${p.name}</h3>
+            <p class="product-card-desc">${p.description || 'Professional audiovisual touring grade hardware.'}</p>
+            
+            <div class="product-card-footer">
+              <div>
+                <div style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Direct Price</div>
+                <div class="price-text" style="font-size: 1.15rem; color: #38bdf8;">₹${Number(p.price).toLocaleString()}</div>
+              </div>
+
+              <a href="/contact.html?subject=${encodeURIComponent('Inquiry for ' + p.name)}" class="btn-action-primary" style="padding: 6px 12px; font-size: 0.82rem; text-decoration: none;">
+                <span>Inquire / Buy</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('storeSearch').addEventListener('input', filterStore);
+    document.getElementById('storeCategorySelect').addEventListener('change', filterStore);
+
+    function filterStore() {
+      const q = document.getElementById('storeSearch').value.toLowerCase().trim();
+      const cat = document.getElementById('storeCategorySelect').value;
+
+      const filtered = catalog.filter(p => {
+        const matchesQ = !q || p.name.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q));
+        const matchesCat = cat === 'all' || p.category === cat;
+        return matchesQ && matchesCat;
+      });
+
+      renderStoreGrid(filtered);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadStoreProducts);
+  </script>
+</body>
+</html>

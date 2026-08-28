@@ -1,5 +1,6 @@
-﻿using HISYSApplication.DTO;
+using HISYSApplication.DTO;
 using HISYSApplication.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HISYSApplication.Controllers
@@ -10,68 +11,120 @@ namespace HISYSApplication.Controllers
     {
         private readonly IProductService _productService;
 
-        public ProductsController(
-            IProductService productService)
+        public ProductsController(IProductService productService)
         {
             _productService = productService;
         }
 
+        /// <summary>
+        /// Retrieve all products with optional category and keyword filtering.
+        /// </summary>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllProducts([FromQuery] string? category = null, [FromQuery] string? search = null)
+        {
+            var products = await _productService.GetAllProductsAsync(category, search);
+            return Ok(products);
+        }
+
+        /// <summary>
+        /// Retrieve single product by ID.
+        /// </summary>
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetProduct(int id)
+        {
+            var product = await _productService.GetProductAsync(id);
+
+            if (product == null)
+            {
+                return NotFound(new { message = "Product not found." });
+            }
+
+            return Ok(product);
+        }
+
+        /// <summary>
+        /// Stream product image binary data directly.
+        /// </summary>
+        [HttpGet("{id}/image")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetProductImage(int id)
+        {
+            var image = await _productService.GetProductImageAsync(id);
+
+            if (image == null)
+            {
+                return NotFound(new { message = "Image not found." });
+            }
+
+            return File(image.ImageData, image.ContentType);
+        }
+
+        /// <summary>
+        /// Admin endpoint: Add a new store product with image.
+        /// </summary>
         [HttpPost]
-        public async Task<IActionResult> AddProduct(
-            [FromForm] ProductRequestDto product)
+        [Authorize]
+        public async Task<IActionResult> AddProduct([FromForm] ProductRequestDto product)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var productId =
-                await _productService.AddProductAsync(product);
+            var productId = await _productService.AddProductAsync(product);
 
             return Ok(new
             {
                 id = productId,
-                message = "Added Successfully"
+                message = "Product added successfully."
             });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllProducts()
+        /// <summary>
+        /// Admin endpoint: Update an existing product (with optional new image).
+        /// </summary>
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpdateDto product)
         {
-            var products =
-                await _productService.GetAllProductsAsync();
-
-            return Ok(products);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProduct(int id)
-        {
-            var product =
-                await _productService.GetProductAsync(id);
-
-            if (product == null)
+            if (!ModelState.IsValid)
             {
-                return NotFound("Product not found.");
+                return BadRequest(ModelState);
             }
 
-            return Ok(product);
-        }
-
-        [HttpGet("{id}/image")]
-        public async Task<IActionResult> GetProductImage(int id)
-        {
-            var image =
-                await _productService.GetProductImageAsync(id);
-
-            if (image == null)
+            var updated = await _productService.UpdateProductAsync(id, product);
+            if (!updated)
             {
-                return NotFound("Image not found.");
+                return NotFound(new { message = "Product not found or update failed." });
             }
 
-            return File(
-                image.ImageData,
-                image.ContentType);
+            return Ok(new
+            {
+                id = id,
+                message = "Product updated successfully."
+            });
+        }
+
+        /// <summary>
+        /// Admin endpoint: Delete a product by ID.
+        /// </summary>
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var deleted = await _productService.DeleteProductAsync(id);
+            if (!deleted)
+            {
+                return NotFound(new { message = "Product not found or delete failed." });
+            }
+
+            return Ok(new
+            {
+                id = id,
+                message = "Product deleted successfully."
+            });
         }
     }
 }
