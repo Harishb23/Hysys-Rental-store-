@@ -1,0 +1,6 @@
+@HISYSApplication_HostAddress = http://localhost:5031
+
+GET {{HISYSApplication_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
